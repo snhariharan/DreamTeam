@@ -54,30 +54,72 @@ PROFILE = BALANCED
 #   Quality   → SECURITY, TESTING
 
 from skills.packs import (          # noqa: E402
-    PYTHON, JAVA,                   # language packs
-    CLOUD_AWS, CLOUD_GCP,           # cloud packs
-    DATABASE,                       # data packs
-    SECURITY,                       # quality packs
-    API,                            # design packs
-    TESTING,                        # test packs
+    # ── Language packs (full-stack)
+    PYTHON, JAVA, KOTLIN,
+    NODEJS, TYPESCRIPT,
+    RUST, GO,
+    # ── Cloud packs (all three major providers)
+    CLOUD_AWS, CLOUD_GCP, CLOUD_AZURE,
+    # ── Data packs
+    DATABASE, NOSQL,
+    # ── Design packs
+    API, GRAPHQL,
+    # ── Quality packs
+    SECURITY, TESTING,
 )
 
+# Shared bundles — import once, reference by role below
+_FULL_STACK   = [PYTHON, JAVA, KOTLIN, NODEJS, TYPESCRIPT, RUST, GO]
+_FULL_CLOUD   = [CLOUD_AWS, CLOUD_GCP, CLOUD_AZURE]
+_FULL_DATA    = [DATABASE, NOSQL]
+_FULL_API     = [API, GRAPHQL]
+
 SKILL_ASSIGNMENTS: dict[str, list] = {
-    # Solution Architect: AWS cloud design + REST API expertise
-    "architect": [CLOUD_AWS, API],
+    # Solution Architect — needs the full picture: every language, all clouds,
+    # both data models, and both API styles to produce technology-agnostic plans
+    "architect": [
+        *_FULL_STACK,   # understand any existing codebase
+        *_FULL_CLOUD,   # cloud-agnostic infrastructure plans
+        *_FULL_DATA,    # SQL and NoSQL data model design
+        *_FULL_API,     # REST and GraphQL endpoint design
+    ],
 
-    # Senior Developer: Python + database skills
-    "developer": [PYTHON, DATABASE],
+    # Senior Developer — can implement in any language on any cloud platform
+    "developer": [
+        *_FULL_STACK,   # write in whichever language the project uses
+        *_FULL_CLOUD,   # use any cloud SDK or IaC provider
+        *_FULL_DATA,    # ORM / query / migration expertise for any store
+        *_FULL_API,     # implement REST or GraphQL endpoints correctly
+    ],
 
-    # Principal Reviewer: security-focused review
-    "reviewer":  [SECURITY],
+    # Principal Reviewer — needs full context to spot cross-language and
+    # cross-cloud anti-patterns; SECURITY added for vulnerability scanning
+    "reviewer": [
+        *_FULL_STACK,   # review code in any language
+        *_FULL_CLOUD,   # spot cloud-specific misconfiguration
+        *_FULL_DATA,    # catch schema, query, and migration issues
+        *_FULL_API,     # verify REST/GraphQL contract correctness
+        SECURITY,       # OWASP / CVE / SANS secure-code review
+    ],
 
-    # QA Engineer: testing methodology + Python test frameworks
-    "tester":    [TESTING, PYTHON],
+    # QA Automation Engineer — write tests for any language and cloud surface
+    "tester": [
+        *_FULL_STACK,   # write pytest, JUnit, Jest, etc. as needed
+        *_FULL_CLOUD,   # mock and test cloud-service integrations
+        *_FULL_DATA,    # test DB migrations, query correctness
+        *_FULL_API,     # contract tests for REST and GraphQL
+        TESTING,        # pytest, Hypothesis, TDD/BDD methodology
+    ],
 
-    # DevOps: AWS deployment expertise
-    "devops":    [CLOUD_AWS],
+    # Cloud DevOps Specialist — multi-cloud deployment, any runtime
+    "devops": [
+        *_FULL_STACK,   # package any language runtime correctly in Docker
+        *_FULL_CLOUD,   # deploy to AWS, GCP, or Azure pipelines
+        *_FULL_DATA,    # configure managed DB instances and backups
+        SECURITY,       # least-privilege IAM, secrets management
+    ],
 }
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # (no further configuration needed below this line)

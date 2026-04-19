@@ -3,3 +3,4 @@ crewai-tools
 langchain-openai
 langchain-anthropic
 langchain-google-genai
+mcp

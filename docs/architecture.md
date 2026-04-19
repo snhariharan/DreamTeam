@@ -6,45 +6,33 @@ System design and data flow for the DreamTeam multi-agent agency.
 
 ## High-level overview
 
-```
- ┌─────────────────────────────────────────────────────┐
- │                    agency.py                         │
- │  ┌──────────────┐    ┌──────────────────────────┐   │
- │  │   Section 1  │    │       Section 2           │   │
- │  │ PROFILE      │    │ SKILL_ASSIGNMENTS         │   │
- │  │ (model names)│    │ (domain skill packs)      │   │
- │  └──────┬───────┘    └────────────┬─────────────┘   │
- └─────────┼───────────────────────┼─────────────────┘
-           │                       │
-           ▼                       ▼
- ┌─────────────────────────────────────────────────────┐
- │              run_with_mcp_tools()                    │
- │  Starts MCP servers, collects tools per role         │
- └───────────────────────┬─────────────────────────────┘
-                         │
-                         ▼
- ┌─────────────────────────────────────────────────────┐
- │              build_and_run_crew()                    │
- │                                                      │
- │  create_architect(model, skill_packs, mcp_tools)     │
- │  create_developer(model, skill_packs, mcp_tools)     │
- │  create_reviewer (model, skill_packs, mcp_tools)     │
- │  create_tester   (model, skill_packs, mcp_tools)     │
- │  create_devops   (model, skill_packs, mcp_tools)     │
- └───────────────────────┬─────────────────────────────┘
-                         │
-                         ▼
- ┌─────────────────────────────────────────────────────┐
- │          CrewAI Hierarchical Crew                    │
- │                                                      │
- │  Manager LLM (from PROFILE.manager)                  │
- │      │                                               │
- │      ├─► Architect  ──► analysis_task                │
- │      ├─► Developer  ──► coding_task                  │
- │      ├─► Reviewer   ──► review_task                  │
- │      ├─► Tester     ──► testing_task                 │
- │      └─► DevOps     ──► deployment_task              │
- └─────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph CFG ["agency.py"]
+        P["⚙️ Section 1\nPROFILE\nmodel names"]
+        S["⚙️ Section 2\nSKILL_ASSIGNMENTS\ndomain skill packs"]
+    end
+
+    MCP["run_with_mcp_tools()\nStarts MCP servers · distributes tools by role"]
+
+    subgraph BUILD ["build_and_run_crew()"]
+        CA["create_architect(model, skill_packs, mcp_tools)"]
+        CD["create_developer(model, skill_packs, mcp_tools)"]
+        CR["create_reviewer (model, skill_packs, mcp_tools)"]
+        CT["create_tester   (model, skill_packs, mcp_tools)"]
+        CDV["create_devops   (model, skill_packs, mcp_tools)"]
+    end
+
+    subgraph CREW ["CrewAI Hierarchical Crew"]
+        MGR["🧠 Manager LLM\nfrom PROFILE.manager"]
+        MGR -->|"1"| ATK["🏛️ Architect → analysis_task"]
+        MGR -->|"2"| DTK["💻 Developer → coding_task"]
+        MGR -->|"3"| RTK["🔍 Reviewer  → review_task"]
+        MGR -->|"4"| TTK["🧪 Tester    → testing_task"]
+        MGR -->|"5"| VTK["🚀 DevOps    → deployment_task"]
+    end
+
+    P & S --> MCP --> BUILD --> CREW
 ```
 
 ---
@@ -53,36 +41,21 @@ System design and data flow for the DreamTeam multi-agent agency.
 
 Each agent receives three layers of tools, merged at construction time:
 
-```
-Agent tools = [base skills] + [skill pack tools] + [MCP tools]
-```
+> `Agent.tools = [base skills] + [skill pack tools] + [MCP tools]`
 
-```
- ┌─────────────────────────────────────────────────────┐
- │  skills/                   (crewai_tools wrappers)   │
- │  ├── filesystem.py         FileRead, FileWriter, Dir │
- │  ├── web_research.py       Serper, Scrape, GitHub    │
- │  ├── config_parsing.py     JSON, TXT, XML search     │
- │  └── docs_search.py        CodeDocs, MDX search      │
- └────────────────────┬────────────────────────────────┘
-                      │ base layer
- ┌────────────────────▼────────────────────────────────┐
- │  skills/packs/             (domain SkillPacks)       │
- │  ├── python_pack.py        docs.python.org, pypi     │
- │  ├── cloud_pack.py         AWS / GCP / Azure docs    │
- │  ├── security_pack.py      OWASP, NVD, CWE           │
- │  └── ...                                             │
- └────────────────────┬────────────────────────────────┘
-                      │ domain layer
- ┌────────────────────▼────────────────────────────────┐
- │  mcp_servers/              (external processes)      │
- │  ├── GitHub MCP            26 tools                  │
- │  ├── Brave Search          2 tools                   │
- │  └── Filesystem MCP        10 tools                  │
- └─────────────────────────────────────────────────────┘
-                      │ external layer
-                      ▼
-              Agent.tools = all merged
+```mermaid
+flowchart BT
+    BASE["🔧 Base Skills — skills/\nFileRead · FileWriter · DirRead\nSerper · WebScrape · DocsSearch · JSONSearch"]
+
+    PACKS["📦 Domain Skill Packs — skills/packs/\nPYTHON · JAVA · CLOUD_AWS · DATABASE\nSECURITY · API · TESTING · GRAPHQL · ..."]
+
+    MCP["🔌 MCP Tools — mcp_servers/\nGitHub 26 tools · Brave Search 2 tools · Filesystem 10 tools"]
+
+    AGENT(["🤖 Agent.tools"])
+
+    BASE -->|"base layer"| PACKS
+    PACKS -->|"+ domain layer"| MCP
+    MCP -->|"+ external layer"| AGENT
 ```
 
 ---
@@ -91,33 +64,50 @@ Agent tools = [base skills] + [skill pack tools] + [MCP tools]
 
 Tasks run **sequentially**. Each task's output becomes context for the next.
 
+```mermaid
+flowchart LR
+    T(["📋 project_tasks.md"])
+
+    A["🏛️ analysis_task\nArchitect\nreads codebase + docs\n→ implementation plan"]
+
+    D["💻 coding_task\nDeveloper\nimplements plan\n→ src/ files"]
+
+    R["🔍 review_task\nReviewer\nchecks code\n→ review_report.md"]
+
+    TE["🧪 testing_task\nTester\nwrites pytest suite\n→ src/tests/"]
+
+    DO["🚀 deployment_task\nDevOps\nwrites Dockerfile\n→ CI/CD pipeline"]
+
+    T --> A -->|plan| D -->|code| R -->|approval| TE -->|tests| DO
 ```
- project_tasks.md
-        │
-        ▼
- ┌──────────────────┐
- │  analysis_task   │  Architect reads codebase + tasks → implementation plan
- └────────┬─────────┘
-          │ plan
-          ▼
- ┌──────────────────┐
- │  coding_task     │  Developer implements plan → writes files to src/
- └────────┬─────────┘
-          │ code
-          ▼
- ┌──────────────────┐
- │  review_task     │  Reviewer checks code → writes review_report.md
- └────────┬─────────┘
-          │ approval
-          ▼
- ┌──────────────────┐
- │  testing_task    │  Tester writes PyTest suite → src/tests/
- └────────┬─────────┘
-          │ tests
-          ▼
- ┌──────────────────┐
- │  deployment_task │  DevOps writes Dockerfile + docker-compose + CI/CD
- └──────────────────┘
+
+---
+
+## MCP server lifecycle
+
+```mermaid
+sequenceDiagram
+    participant A as agency.py
+    participant E as ExitStack
+    participant G as GitHub MCP
+    participant B as Brave MCP
+    participant F as Filesystem MCP
+    participant C as crew.kickoff()
+
+    A->>E: run_with_mcp_tools(callback)
+    E->>G: npx start subprocess
+    E->>B: npx start subprocess
+    E->>F: npx start subprocess
+    note over G,F: Tools distributed to agents by role
+    E->>C: callback(tools_by_role)
+    C->>G: tool calls
+    C->>B: tool calls
+    C->>F: tool calls
+    C-->>E: crew finished
+    E->>G: terminate
+    E->>B: terminate
+    E->>F: terminate
+    note over E: ExitStack ensures cleanup even on exception
 ```
 
 ---
@@ -130,37 +120,23 @@ All LLMs and embedding-based tools in DreamTeam are constructed **lazily**
 This means you can `import` any module without having API keys set —
 useful for testing, CI lint checks, and IDEs.
 
-```
-Module load time:
-  config/settings.py   → defines functions (no LLM instances)
-  skills/web_research  → defines get_*() factories (no tool instances)
-  agents/architect.py  → defines create_architect() (no Agent instances)
+```mermaid
+flowchart LR
+    subgraph IMPORT ["Module load time (no keys needed)"]
+        direction TB
+        S["config/settings.py\ndefines functions only"]
+        W["skills/web_research.py\ndefines get_*() factories"]
+        AG["agents/architect.py\ndefines create_architect()"]
+    end
 
-Runtime (agency.py __main__):
-  get_llm("gemini-1.5-flash")  → ChatGoogleGenerativeAI(...)  ✅ key is set
-  get_web_search()             → SerperDevTool()               ✅ ready
-  create_architect(...)        → Agent(tools=[...], llm=...)   ✅ fully built
-```
+    subgraph RUNTIME ["Runtime — agency.py __main__"]
+        direction TB
+        L["get_llm('gemini-1.5-flash')\n→ ChatGoogleGenerativeAI ✅"]
+        T["get_web_search()\n→ SerperDevTool ✅"]
+        C["create_architect(...)\n→ Agent(tools, llm) ✅"]
+    end
 
----
-
-## MCP server lifecycle
-
-```
-  ExitStack context opens
-    │
-    ├─ npx -y @modelcontextprotocol/server-github     (subprocess)
-    ├─ npx -y @modelcontextprotocol/server-brave-search (subprocess)
-    └─ npx -y @modelcontextprotocol/server-filesystem   (subprocess)
-    │
-    │  Each MCPServerAdapter wraps the subprocess stdin/stdout
-    │  and exposes its tools as crewai BaseTool instances
-    │
-    ├─ Agents created with MCP tools in their tool list
-    ├─ crew.kickoff() — all tool calls are routed through adapters
-    │
-  ExitStack context closes
-    └─ All subprocesses terminated (SIGTERM → SIGKILL fallback)
+    IMPORT -->|"python agency.py\nkeys are set"| RUNTIME
 ```
 
 ---

@@ -121,26 +121,33 @@ for safety (the `"."` argument in `mcp_servers/servers.py`).
 MCP servers are started and stopped automatically by `run_with_mcp_tools()` in
 `mcp_servers/adapters.py`. The lifecycle is:
 
-```
-agency.py starts
-   │
-   └─► run_with_mcp_tools(build_and_run_crew)
-           │
-           ├─► Start GitHub MCP subprocess
-           ├─► Start Brave Search MCP subprocess
-           ├─► Start Filesystem MCP subprocess
-           │
-           ├─► Distribute tools by role
-           │
-           ├─► Build agents + crew
-           ├─► crew.kickoff() — all tools accessible
-           │
-           ├─► Shutdown GitHub MCP subprocess
-           ├─► Shutdown Brave Search MCP subprocess
-           └─► Shutdown Filesystem MCP subprocess
+```mermaid
+sequenceDiagram
+    participant A as agency.py
+    participant E as ExitStack
+    participant G as GitHub MCP
+    participant B as Brave MCP
+    participant F as Filesystem MCP
+    participant C as crew.kickoff()
+
+    A->>E: run_with_mcp_tools(build_and_run_crew)
+    E->>G: npx -y @mcp/server-github
+    E->>B: npx -y @mcp/server-brave-search
+    E->>F: npx -y @mcp/server-filesystem
+    note over G,F: Tools distributed to agents by role
+    E->>C: build_and_run_crew(tools_by_role)
+    C->>G: tool calls during execution
+    C->>B: tool calls during execution
+    C->>F: tool calls during execution
+    C-->>E: crew finished
+    E->>G: terminate
+    E->>B: terminate
+    E->>F: terminate
+    note over E: ExitStack guarantees cleanup even on exception
 ```
 
 This ensures subprocesses are always cleaned up, even if the crew raises an exception.
+
 
 ---
 

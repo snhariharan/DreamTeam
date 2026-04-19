@@ -10,40 +10,25 @@ Each agent runs a different frontier LLM, carries a curated set of tools (skills
 
 You drop a task list into `project_tasks.md`, run `python agency.py`, and the crew does the rest:
 
-```
-📋 project_tasks.md
-        │
-        ▼
-┌─────────────────────────────────────────────────────────────┐
-│  🧠  Crew Manager  (claude-3-5-sonnet by default)           │
-│                                                             │
-│  • Reads the task list and all agent outputs                │
-│  • Delegates each task to the right specialist              │
-│  • Evaluates results — sends back if incomplete or wrong    │
-│  • Re-assigns between agents when one gets stuck            │
-│  • Synthesises the final deliverable                        │
-│                                                             │
-│  ⚡ No tools — pure reasoning and orchestration only        │
-└──────────────────────────┬──────────────────────────────────┘
-                           │  delegates & evaluates
-          ┌────────────────┼─────────────────┐
-          │                │                 │
-          ▼                ▼                 ▼
-   ┌──────────────┐  ┌───────────────┐  ┌──────────────┐
-   │ 🏛️ Architect  │  │ 💻 Developer  │  │ 🔍 Reviewer  │
-   │              │  │               │  │              │
-   │ Reads code   │  │ Implements    │  │ Checks code  │
-   │ + docs →     │  │ plan →        │  │ → PASS/FAIL  │
-   │ impl. plan   │  │ src/ files    │  │ report.md    │
-   └──────────────┘  └───────────────┘  └──────────────┘
+```mermaid
+flowchart TD
+    T(["📋 project_tasks.md"])
 
-   ┌──────────────┐  ┌─────────────────────────────────┐
-   │ 🧪 Tester    │  │ 🚀 DevOps                       │
-   │              │  │                                 │
-   │ Writes pytest│  │ Writes Dockerfile +             │
-   │ suite →      │  │ docker-compose +                │
-   │ tests/ dir   │  │ CI/CD pipeline YAML             │
-   └──────────────┘  └─────────────────────────────────┘
+    M["🧠 Crew Manager\nclaude-3-5-sonnet · temp 0.2\n───────────────────────\nDelegates · Evaluates · Re-assigns · Synthesises\nNo tools — pure orchestration"]
+
+    A["🏛️ Architect\ngem ini-1.5-flash\n→ implementation plan"]
+    D["💻 Developer\ngpt-4o\n→ src/ files"]
+    R["🔍 Reviewer\nclaude-3-5-sonnet\n→ review_report.md"]
+    TE["🧪 Tester\ngpt-4o-mini\n→ tests/ suite"]
+    DO["🚀 DevOps\ngpt-4o-mini\n→ Dockerfile + CI/CD"]
+
+    T --> M
+    M -->|"1 · plan"| A
+    A -->|"2 · code"| D
+    D -->|"3 · review"| R
+    R -->|"4 · test"| TE
+    TE -->|"5 · deploy"| DO
+    A & D & R & TE & DO -.->|"output evaluated"| M
 ```
 
 Each agent runs a **different LLM** chosen for that role's strengths, extended

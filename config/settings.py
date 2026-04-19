@@ -8,11 +8,14 @@ os.environ["OPENAI_API_KEY"]    = os.getenv("OPENAI_API_KEY",    "")
 os.environ["ANTHROPIC_API_KEY"] = os.getenv("ANTHROPIC_API_KEY", "")
 os.environ["GOOGLE_API_KEY"]    = os.getenv("GOOGLE_API_KEY",     "")
 os.environ["SERPER_API_KEY"]    = os.getenv("SERPER_API_KEY",     "")  # https://serper.dev
-os.environ["GITHUB_TOKEN"]      = os.getenv("GITHUB_TOKEN",       "")  # GitHub PAT (repo + copilot scope)
+os.environ["GITHUB_TOKEN"]      = os.getenv("GITHUB_TOKEN",       "")  # PAT: repo + models:read (Copilot Pro gets higher limits)
 os.environ["BRAVE_API_KEY"]     = os.getenv("BRAVE_API_KEY",      "")  # https://brave.com/search/api/
 
-# GitHub Copilot API endpoint (OpenAI-compatible)
-_COPILOT_BASE_URL = "https://api.githubcopilot.com"
+# GitHub Models — OpenAI-compatible endpoint backed by a GitHub PAT
+# Supports GPT-4o, Claude, Gemini, Llama, Mistral, Phi, and more
+# Requires GITHUB_TOKEN with `models:read` scope (Copilot Pro subscribers get higher rate limits)
+_GITHUB_MODELS_ENDPOINT = "https://models.github.ai/inference"
+_GITHUB_MODELS_TOKEN    = os.getenv("GITHUB_TOKEN", "")
 
 
 # ── Universal LLM factory ──────────────────────────────────────────────────
@@ -22,12 +25,13 @@ def get_llm(model: str, temperature: float = 0.1):
     Create an LLM instance from a model name string.
 
     Provider is resolved automatically by model-name prefix:
-      gpt-*, o1-*, o3-*, o4-*      → OpenAI
-      claude-*                      → Anthropic
-      gemini-*                      → Google Generative AI
-      copilot-*, github-copilot*    → GitHub Copilot (OpenAI-compatible)
-                                       Requires GITHUB_TOKEN env var with
-                                       'copilot' OAuth scope.
+
+      gh:<model>                   → GitHub Models API  (OpenAI-compat, uses GITHUB_TOKEN)
+                                     e.g. "gh:gpt-4o", "gh:claude-3-7-sonnet-20250219",
+                                          "gh:meta-llama/Llama-3.3-70B-Instruct"
+      gpt-*, o1-*, o3-*, o4-*     → OpenAI
+      claude-*                     → Anthropic
+      gemini-*                     → Google Generative AI
       llama*, mistral*, phi*,
         codellama*, deepseek*,
         qwen*, mixtral*, vicuna*,
@@ -36,8 +40,8 @@ def get_llm(model: str, temperature: float = 0.1):
     If the prefix is unrecognised, OpenAI is used as the fallback.
 
     Args:
-        model:       Model identifier string (e.g. "gpt-4o",
-                     "claude-sonnet-4-5", "copilot-gpt-4o").
+        model:       Model identifier string (e.g. "gpt-4.1",
+                     "claude-sonnet-4-5", "gh:gpt-4o").
         temperature: Sampling temperature (0.0 = deterministic, 1.0 = creative).
 
     Returns:
@@ -48,38 +52,38 @@ def get_llm(model: str, temperature: float = 0.1):
         llm = get_llm("gpt-4.1", temperature=0.1)
         llm = get_llm("claude-sonnet-4-5", temperature=0.2)
         llm = get_llm("gemini-2.5-flash")
-        llm = get_llm("copilot-gpt-4o")       # GitHub Copilot
-        llm = get_llm("qwen2.5-coder:14b")    # Ollama local
+        llm = get_llm("codellama")                      # Ollama local
+        llm = get_llm("gh:gpt-4o")                     # GitHub Models
+        llm = get_llm("gh:claude-3-7-sonnet-20250219") # GitHub Models — Claude via Copilot
     """
     m = model.lower()
 
-    # GitHub Copilot — uses OpenAI-compatible endpoint with a GitHub token
-    if any(m.startswith(p) for p in ("copilot-", "github-copilot")):
-        github_token = os.getenv("GITHUB_TOKEN", "")
-        if not github_token:
-            raise ValueError(
-                "GITHUB_TOKEN with 'copilot' scope is required for Copilot models. "
-                "Create a token at https://github.com/settings/tokens and export it "
-                "as GITHUB_TOKEN."
-            )
-        # Strip the 'copilot-' prefix to get the underlying model name
-        underlying = model[len("copilot-"):] if m.startswith("copilot-") else model
+    # ── GitHub Models (prefix "gh:") ─────────────────────────────────────────
+    # All models on the GitHub Models catalogue are served through an
+    # OpenAI-compatible endpoint authenticated with a GITHUB_TOKEN.
+    # Copilot Pro subscribers enjoy higher rate limits than free-tier users.
+    if m.startswith("gh:"):
+        model_id = model[3:]   # strip the "gh:" prefix
         return ChatOpenAI(
-            model=underlying,
+            model=model_id,
+            base_url=_GITHUB_MODELS_ENDPOINT,
+            api_key=_GITHUB_MODELS_TOKEN or "none",  # must be non-empty string
             temperature=temperature,
-            openai_api_key=github_token,
-            openai_api_base=_COPILOT_BASE_URL,
         )
 
-    if any(m.startswith(p) for p in ("gpt-", "o1-", "o3-", "o4-")):
+    # ── OpenAI ────────────────────────────────────────────────────────────────
+    if any(m.startswith(p) for p in ("gpt-", "o1-", "o3-", "o4-", "o1", "o3")):
         return ChatOpenAI(model=model, temperature=temperature)
 
+    # ── Anthropic ─────────────────────────────────────────────────────────────
     if m.startswith("claude"):
         return ChatAnthropic(model_name=model, temperature=temperature)
 
+    # ── Google ────────────────────────────────────────────────────────────────
     if m.startswith("gemini"):
         return ChatGoogleGenerativeAI(model=model, temperature=temperature)
 
+    # ── Ollama (local) ────────────────────────────────────────────────────────
     _ollama_prefixes = (
         "llama", "mistral", "phi", "codellama", "deepseek",
         "qwen", "mixtral", "vicuna", "orca", "falcon",
@@ -91,8 +95,9 @@ def get_llm(model: str, temperature: float = 0.1):
             from langchain_community.chat_models import ChatOllama  # type: ignore
         return ChatOllama(model=model, temperature=temperature)
 
-    # Unknown prefix — fall back to OpenAI
+    # ── Unknown prefix → OpenAI fallback ─────────────────────────────────────
     return ChatOpenAI(model=model, temperature=temperature)
+
 
 
 # ── Role-specific lazy getters (used by agents when no profile is supplied) ─

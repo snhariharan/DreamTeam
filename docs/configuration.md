@@ -25,11 +25,13 @@ PROFILE = BALANCED
 | `BALANCED` ✦ | claude-3-5-sonnet | gemini-1.5-flash | gpt-4o | claude-3-5-sonnet | gpt-4o-mini |
 | `FAST` | claude-3-haiku | gemini-1.5-flash | gpt-4o-mini | claude-3-haiku | gpt-4o-mini |
 | `BUDGET` | gpt-4o-mini | gemini-1.5-flash | gpt-4o-mini | gpt-4o-mini | gpt-3.5-turbo |
+| `COPILOT_PRO` ★ | gh:claude-3-7-sonnet | gh:claude-3-7-sonnet | gh:gpt-4o | gh:claude-3-7-sonnet | gh:gpt-4o-mini |
+| `COPILOT_STANDARD` | gh:gpt-4o | gh:gpt-4o | gh:gpt-4o | gh:gpt-4o | gh:gpt-4o-mini |
 | `LOCAL` / `LOCAL_BALANCED` | llama3.1:8b | mistral:7b | qwen2.5-coder:14b | llama3.1:8b | phi3:medium |
 | `LOCAL_FAST` | mistral:7b | mistral:7b | qwen2.5-coder:7b | mistral:7b | phi3:mini |
 | `LOCAL_QUALITY` | llama3.1:70b | llama3.1:70b | qwen2.5-coder:32b | llama3.1:70b | mistral:7b |
 
-✦ Recommended default. Local profiles require Ollama — see **[local_models.md](local_models.md)**.
+✦ Recommended default. ★ Requires `GITHUB_TOKEN` with `models:read` scope. Local profiles require Ollama — see **[local_models.md](local_models.md)**.
 
 
 ### Custom profile
@@ -72,11 +74,74 @@ providers automatically:
 
 | Prefix | Provider | Example |
 |---|---|---|
+| `gh:<model>` | **GitHub Models API** (OpenAI-compat, uses `GITHUB_TOKEN`) | `gh:gpt-4o`, `gh:claude-3-7-sonnet-20250219` |
 | `gpt-*`, `o1-*`, `o3-*`, `o4-*` | OpenAI | `gpt-4o`, `o3-mini` |
 | `claude-*` | Anthropic | `claude-3-5-sonnet-20241022` |
 | `gemini-*` | Google AI | `gemini-1.5-pro`, `gemini-1.5-flash` |
 | `llama*`, `codellama*`, `phi*`, `mistral*`, `deepseek*`, `qwen*`, `mixtral*` | Ollama (local) | `llama3.1`, `codellama` |
 | anything else | OpenAI (fallback) | custom fine-tuned model IDs |
+
+---
+
+## GitHub Copilot Pro models
+
+All GitHub Models are accessed through a single OpenAI-compatible endpoint — no extra
+API keys beyond your existing `GITHUB_TOKEN`.
+
+### Setup
+
+```bash
+# 1. Create a PAT at https://github.com/settings/tokens
+#    Required scopes:  repo  +  models:read
+export GITHUB_TOKEN=ghp_...
+```
+
+> **Rate limits**
+> - Free GitHub account: limited RPM and daily token cap
+> - **GitHub Copilot Pro**: ~10× higher limits across all models
+> - **GitHub Copilot Pro+**: highest available limits
+
+### Switching to Copilot
+
+```python
+# agency.py — Section 1
+from config.profiles import COPILOT_PRO  # or COPILOT_STANDARD
+PROFILE = COPILOT_PRO
+```
+
+### Available models on GitHub Models
+
+Browse the full catalogue: <https://github.com/marketplace/models>
+
+Use any model with the `gh:` prefix:
+
+| Model (gh: prefix) | Provider | Best for |
+|---|---|---|
+| `gh:claude-3-7-sonnet-20250219` | Anthropic | Manager, Architect, Reviewer |
+| `gh:claude-3-5-sonnet-20241022` | Anthropic | Reviewer, Manager |
+| `gh:claude-3-5-haiku-20241022` | Anthropic | Fast tasks |
+| `gh:gpt-4o` | OpenAI | Developer, general purpose |
+| `gh:gpt-4o-mini` | OpenAI | Tester, DevOps, bulk tasks |
+| `gh:o3-mini` | OpenAI | Complex reasoning |
+| `gh:meta-llama/Llama-3.3-70B-Instruct` | Meta | Open-weight alternative |
+| `gh:microsoft/Phi-4` | Microsoft | Fast small model |
+| `gh:mistral-large-2411` | Mistral | European data-residency |
+
+### Custom Copilot profile
+
+```python
+from config.profiles import AgencyProfile
+
+PROFILE = AgencyProfile(
+    name="my_copilot",
+    description="Copilot Pro with o3-mini for reasoning roles.",
+    manager="gh:claude-3-7-sonnet-20250219",  # deep orchestration
+    architect="gh:o3-mini",                   # strong reasoning for planning
+    developer="gh:gpt-4o",                    # best coder
+    reviewer="gh:claude-3-7-sonnet-20250219", # sharpest review
+    default="gh:gpt-4o-mini",                 # fast + cheap
+)
+```
 
 ---
 

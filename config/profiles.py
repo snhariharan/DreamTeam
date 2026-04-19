@@ -179,10 +179,63 @@ LOCAL_FAST = AgencyProfile(
 # Alias — LOCAL points to the balanced tier (most common laptop setup)
 LOCAL = LOCAL_BALANCED
 
+
+# ── GitHub Copilot / GitHub Models profiles ────────────────────────────────
+# All model names are prefixed with "gh:" so get_llm() routes them through
+# https://models.github.ai/inference using your GITHUB_TOKEN.
+#
+# Prerequisites:
+#   export GITHUB_TOKEN=ghp_...     ← needs  repo  +  models:read  scopes
+#
+# Rate limits:
+#   Free GitHub account  : low RPM / daily token cap
+#   GitHub Copilot Pro   : ~10x higher limits across all models
+#   GitHub Copilot Pro+  : highest limits
+#
+# Browse available models: https://github.com/marketplace/models
+#
+# Two tiers:
+#   COPILOT_PRO      — best reasoning models for every role
+#   COPILOT_STANDARD — cost-effective models, still high quality
+
+COPILOT_PRO = AgencyProfile(
+    name="copilot_pro",
+    description=(
+        "GitHub Models via Copilot Pro. "
+        "Best-in-class models for every role, no extra API keys."
+    ),
+    manager="gh:claude-3-7-sonnet-20250219",   # Anthropic's latest — deep orchestration
+    architect="gh:claude-3-7-sonnet-20250219", # Long-context analysis + planning
+    developer="gh:gpt-4o",                     # OpenAI's best general-purpose coder
+    reviewer="gh:claude-3-7-sonnet-20250219",  # Sharpest critical analysis
+    default="gh:gpt-4o-mini",                  # Fast + cheap for tester & devops
+    temperatures={
+        "manager":   0.2,
+        "architect": 0.2,
+        "developer": 0.1,
+        "reviewer":  0.1,
+    },
+)
+
+COPILOT_STANDARD = AgencyProfile(
+    name="copilot_standard",
+    description=(
+        "GitHub Models via Copilot. "
+        "GPT-4o across all roles — balanced cost and quality."
+    ),
+    manager="gh:gpt-4o",       # Solid orchestration
+    architect="gh:gpt-4o",     # Good planner
+    developer="gh:gpt-4o",     # Strong coder
+    reviewer="gh:gpt-4o",      # Thorough reviewer
+    default="gh:gpt-4o-mini",  # Fast for tester & devops
+)
+
 __all__ = [
     "AgencyProfile",
     # Cloud / API profiles
     "POWER", "BALANCED", "FAST", "BUDGET", "COPILOT",
+    # GitHub Models / Copilot profiles
+    "COPILOT_PRO", "COPILOT_STANDARD",
     # Local / Ollama profiles
     "LOCAL", "LOCAL_QUALITY", "LOCAL_BALANCED", "LOCAL_FAST",
 ]

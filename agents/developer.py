@@ -96,6 +96,7 @@ def create_developer(
         ),
         tools=tools,
         llm=llm,
+        allow_code_execution=True,   # run snippets to verify logic before writing
         allow_delegation=False,
         verbose=True,
     )

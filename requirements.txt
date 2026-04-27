@@ -3,4 +3,6 @@ crewai-tools
 langchain-openai
 langchain-anthropic
 langchain-google-genai
+langchain-ollama          # optional — only needed for LOCAL profiles
 mcp
+python-dotenv             # load .env file — no env-var gymnastics needed

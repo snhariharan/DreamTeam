@@ -59,22 +59,35 @@ class SkillPack:
 
 # ── Re-export all packs for convenient one-line imports ─────────────────────
 
-from skills.packs.python_pack   import PYTHON                          # noqa: E402
-from skills.packs.java_pack     import JAVA, KOTLIN                    # noqa: E402
-from skills.packs.cloud_pack    import CLOUD_AWS, CLOUD_GCP, CLOUD_AZURE  # noqa: E402
-from skills.packs.database_pack import DATABASE, NOSQL                 # noqa: E402
-from skills.packs.security_pack import SECURITY                        # noqa: E402
-from skills.packs.api_pack      import API, GRAPHQL                    # noqa: E402
-from skills.packs.testing_pack  import TESTING                         # noqa: E402
-from skills.packs.language_pack import NODEJS, RUST, GO, TYPESCRIPT    # noqa: E402
+from skills.packs.python_pack       import PYTHON                             # noqa: E402
+from skills.packs.java_pack         import JAVA, KOTLIN, SCALA                # noqa: E402
+from skills.packs.cloud_pack        import CLOUD_AWS, CLOUD_GCP, CLOUD_AZURE  # noqa: E402
+from skills.packs.database_pack     import DATABASE, NOSQL                    # noqa: E402
+from skills.packs.security_pack     import SECURITY                           # noqa: E402
+from skills.packs.api_pack          import API, GRAPHQL                       # noqa: E402
+from skills.packs.testing_pack      import TESTING                            # noqa: E402
+from skills.packs.language_pack     import NODEJS, RUST, GO, TYPESCRIPT       # noqa: E402
+from skills.packs.frontend_pack     import REACT, ANGULAR                     # noqa: E402
+from skills.packs.kubernetes_pack   import KUBERNETES                         # noqa: E402
+from skills.packs.terraform_pack    import TERRAFORM                          # noqa: E402
+from skills.packs.observability_pack import OBSERVABILITY                     # noqa: E402
+from skills.packs.docker_pack       import DOCKER                             # noqa: E402
 
 __all__ = [
     "SkillPack",
-    "PYTHON", "JAVA", "KOTLIN",
+    # Language packs — backend
+    "PYTHON", "JAVA", "KOTLIN", "SCALA",
+    "NODEJS", "TYPESCRIPT", "RUST", "GO",
+    # Language packs — frontend
+    "REACT", "ANGULAR",
+    # Cloud provider packs
     "CLOUD_AWS", "CLOUD_GCP", "CLOUD_AZURE",
+    # Data packs
     "DATABASE", "NOSQL",
-    "SECURITY",
+    # Quality packs
+    "SECURITY", "TESTING",
+    # Design packs
     "API", "GRAPHQL",
-    "TESTING",
-    "NODEJS", "RUST", "GO", "TYPESCRIPT",
+    # Infrastructure / platform packs
+    "DOCKER", "KUBERNETES", "TERRAFORM", "OBSERVABILITY",
 ]

@@ -79,42 +79,62 @@ class AgencyProfile:
 
 POWER = AgencyProfile(
     name="power",
-    description="Frontier models — maximum quality, highest cost.",
-    manager="claude-3-opus-20240229",
-    architect="gemini-1.5-pro",
-    developer="gpt-4o",
-    reviewer="claude-3-5-sonnet-20241022",
-    default="gpt-4o",
+    description="Frontier models (2025) — maximum quality, highest cost.",
+    manager="claude-opus-4-5",
+    architect="gemini-2.5-pro",
+    developer="gpt-4.1",
+    reviewer="claude-opus-4-5",
+    default="gpt-4.1",
 )
 
 BALANCED = AgencyProfile(
     name="balanced",
     description="Strong quality / cost / speed balance. Recommended default.",
-    manager="claude-3-5-sonnet-20241022",
-    architect="gemini-1.5-flash",
-    developer="gpt-4o",
-    reviewer="claude-3-5-sonnet-20241022",
-    default="gpt-4o-mini",
+    manager="claude-sonnet-4-5",
+    architect="gemini-2.5-flash",
+    developer="gpt-4.1",
+    reviewer="claude-sonnet-4-5",
+    default="gpt-4.1-mini",
 )
 
 FAST = AgencyProfile(
     name="fast",
     description="Optimised for speed and low latency. Great for rapid iteration.",
-    manager="claude-3-haiku-20240307",
-    architect="gemini-1.5-flash",
-    developer="gpt-4o-mini",
-    reviewer="claude-3-haiku-20240307",
-    default="gpt-4o-mini",
+    manager="claude-3-5-haiku-20241022",
+    architect="gemini-2.0-flash",
+    developer="gpt-4.1-mini",
+    reviewer="claude-3-5-haiku-20241022",
+    default="gpt-4.1-mini",
 )
 
 BUDGET = AgencyProfile(
     name="budget",
     description="Minimum cost. Use for experiments and non-critical tasks.",
-    manager="gpt-4o-mini",
-    architect="gemini-1.5-flash",
-    developer="gpt-4o-mini",
-    reviewer="gpt-4o-mini",
-    default="gpt-3.5-turbo",
+    manager="gpt-4.1-mini",
+    architect="gemini-2.0-flash",
+    developer="gpt-4.1-mini",
+    reviewer="gpt-4.1-mini",
+    default="gpt-4.1-nano",
+)
+
+# ── GitHub Copilot profile ───────────────────────────────────────────────────────────────
+# Routes every agent through GitHub Copilot's OpenAI-compatible API.
+# Requires: GITHUB_TOKEN env var with the 'copilot' OAuth scope.
+# Models are prefixed with 'copilot-' so settings.get_llm() routes them
+# to https://api.githubcopilot.com automatically.
+#
+# Scope setup:
+#   1. Go to https://github.com/settings/tokens
+#   2. Create a Fine-grained token with 'GitHub Copilot' permission (read)
+#   3. export GITHUB_TOKEN=<token>
+COPILOT = AgencyProfile(
+    name="copilot",
+    description="GitHub Copilot API — enterprise models routed via Copilot endpoint.",
+    manager="copilot-gpt-4o",
+    architect="copilot-gpt-4o",
+    developer="copilot-gpt-4o",
+    reviewer="copilot-gpt-4o",
+    default="copilot-gpt-4o-mini",
 )
 
 # ── Local / Ollama profiles ────────────────────────────────────────────────
@@ -158,4 +178,12 @@ LOCAL_FAST = AgencyProfile(
 
 # Alias — LOCAL points to the balanced tier (most common laptop setup)
 LOCAL = LOCAL_BALANCED
+
+__all__ = [
+    "AgencyProfile",
+    # Cloud / API profiles
+    "POWER", "BALANCED", "FAST", "BUDGET", "COPILOT",
+    # Local / Ollama profiles
+    "LOCAL", "LOCAL_QUALITY", "LOCAL_BALANCED", "LOCAL_FAST",
+]
 

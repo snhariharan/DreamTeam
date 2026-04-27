@@ -85,6 +85,7 @@ def create_tester(
         ),
         tools=tools,
         llm=llm,
+        allow_code_execution=True,   # execute tests and confirm green before reporting
         allow_delegation=False,
         verbose=True,
     )

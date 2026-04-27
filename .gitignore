@@ -3,3 +3,10 @@
 *.iml
 /.idea/
 /config/__pycache__/
+# secrets — never commit real keys
+.env
+# generated outputs
+/src/
+review_report.md
+test_results.md
+project_tasks.md

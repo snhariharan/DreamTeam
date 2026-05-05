@@ -59,19 +59,23 @@ class SkillPack:
 
 # ── Re-export all packs for convenient one-line imports ─────────────────────
 
-from skills.packs.python_pack       import PYTHON                             # noqa: E402
-from skills.packs.java_pack         import JAVA, KOTLIN, SCALA                # noqa: E402
-from skills.packs.cloud_pack        import CLOUD_AWS, CLOUD_GCP, CLOUD_AZURE  # noqa: E402
-from skills.packs.database_pack     import DATABASE, NOSQL                    # noqa: E402
-from skills.packs.security_pack     import SECURITY                           # noqa: E402
-from skills.packs.api_pack          import API, GRAPHQL                       # noqa: E402
-from skills.packs.testing_pack      import TESTING                            # noqa: E402
-from skills.packs.language_pack     import NODEJS, RUST, GO, TYPESCRIPT       # noqa: E402
-from skills.packs.frontend_pack     import REACT, ANGULAR                     # noqa: E402
-from skills.packs.kubernetes_pack   import KUBERNETES                         # noqa: E402
-from skills.packs.terraform_pack    import TERRAFORM                          # noqa: E402
-from skills.packs.observability_pack import OBSERVABILITY                     # noqa: E402
-from skills.packs.docker_pack       import DOCKER                             # noqa: E402
+from skills.packs.python_pack        import PYTHON                             # noqa: E402
+from skills.packs.java_pack          import JAVA, KOTLIN, SCALA                # noqa: E402
+from skills.packs.cloud_pack         import CLOUD_AWS, CLOUD_GCP, CLOUD_AZURE  # noqa: E402
+from skills.packs.database_pack      import DATABASE, NOSQL                    # noqa: E402
+from skills.packs.security_pack      import SECURITY                           # noqa: E402
+from skills.packs.api_pack           import API, GRAPHQL                       # noqa: E402
+from skills.packs.testing_pack       import TESTING                            # noqa: E402
+from skills.packs.language_pack      import NODEJS, RUST, GO, TYPESCRIPT       # noqa: E402
+from skills.packs.frontend_pack      import REACT, ANGULAR                     # noqa: E402
+from skills.packs.kubernetes_pack    import KUBERNETES                         # noqa: E402
+from skills.packs.terraform_pack     import TERRAFORM                          # noqa: E402
+from skills.packs.observability_pack import OBSERVABILITY                      # noqa: E402
+from skills.packs.docker_pack        import DOCKER                             # noqa: E402
+from skills.packs.cicd_pack          import (                                   # noqa: E402
+    CICD_GITHUB, CICD_AZURE, CICD_AWS,
+    CICD_JENKINS, CICD_GITLAB, CICD_CIRCLE,
+)
 
 __all__ = [
     "SkillPack",
@@ -88,6 +92,10 @@ __all__ = [
     "SECURITY", "TESTING",
     # Design packs
     "API", "GRAPHQL",
+    # CI/CD pipeline packs
+    "CICD_GITHUB", "CICD_AZURE", "CICD_AWS",
+    "CICD_JENKINS", "CICD_GITLAB", "CICD_CIRCLE",
     # Infrastructure / platform packs
     "DOCKER", "KUBERNETES", "TERRAFORM", "OBSERVABILITY",
 ]
+

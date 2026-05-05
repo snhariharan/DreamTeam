@@ -22,6 +22,9 @@ from skills.packs import (
     API, GRAPHQL,
     # Quality
     SECURITY, TESTING,
+    # CI/CD
+    CICD_GITHUB, CICD_AZURE, CICD_AWS,
+    CICD_JENKINS, CICD_GITLAB, CICD_CIRCLE,
 )
 ```
 
@@ -276,7 +279,96 @@ from skills.packs import (
 
 ---
 
-## Creating a custom skill pack
+## CI/CD Pipeline Packs
+
+All six packs are automatically applied to the **DevOps agent** via `_FULL_CICD`.
+`CICD_GITHUB` is also applied to the **Reviewer** to catch insecure workflow patterns.
+
+### `CICD_GITHUB`
+**Best for:** Cloud DevOps Specialist, Principal Reviewer
+
+| Item | Detail |
+|---|---|
+| Documentation | GitHub Actions docs, reusable workflows guide, Marketplace, secrets guide |
+| Expertise | OIDC federation, composite/reusable actions, matrix builds, concurrency, self-hosted runners |
+
+```python
+"devops":   [CICD_GITHUB]   # writes .github/workflows/deploy.yml
+"reviewer": [CICD_GITHUB]   # catches script injection, unsanitised inputs
+```
+
+---
+
+### `CICD_AZURE`
+**Best for:** Cloud DevOps Specialist
+
+| Item | Detail |
+|---|---|
+| Documentation | Azure DevOps Pipelines YAML schema, library, artifacts |
+| Expertise | Multi-stage YAML, deployment jobs, environments, Key Vault variable groups, approval gates |
+
+```python
+"devops": [CICD_AZURE]
+```
+
+---
+
+### `CICD_AWS`
+**Best for:** Cloud DevOps Specialist
+
+| Item | Detail |
+|---|---|
+| Documentation | CodePipeline, CodeBuild (buildspec.yml), CodeDeploy (appspec.yml), CodeArtifact |
+| Expertise | Pipeline stages (source → build → test → deploy), IAM roles, KMS artifact encryption, blue-green deploy |
+
+```python
+"devops": [CICD_AWS]
+```
+
+---
+
+### `CICD_JENKINS`
+**Best for:** Cloud DevOps Specialist
+
+| Item | Detail |
+|---|---|
+| Documentation | Jenkins Pipeline docs, step reference, shared library guide, Plugins index |
+| Expertise | Declarative Jenkinsfiles, parallel stages, Groovy shared libraries, Credentials Store, Blue Ocean |
+
+```python
+"devops": [CICD_JENKINS]
+```
+
+---
+
+### `CICD_GITLAB`
+**Best for:** Cloud DevOps Specialist
+
+| Item | Detail |
+|---|---|
+| Documentation | GitLab CI/CD YAML reference, runners, packages, Auto DevOps |
+| Expertise | DAG `needs:`, rules, environments, SAST/DAST templates, Docker/k8s runners |
+
+```python
+"devops": [CICD_GITLAB]
+```
+
+---
+
+### `CICD_CIRCLE`
+**Best for:** Cloud DevOps Specialist
+
+| Item | Detail |
+|---|---|
+| Documentation | CircleCI configuration reference, orb registry |
+| Expertise | Orbs, contexts, resource classes, parallelism, test splitting, approval jobs |
+
+```python
+"devops": [CICD_CIRCLE]
+```
+
+---
+
 
 ```python
 # skills/packs/my_pack.py

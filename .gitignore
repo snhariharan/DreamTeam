@@ -2,7 +2,9 @@
 /venv/
 *.iml
 /.idea/
-/config/__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
 # secrets — never commit real keys
 .env
 # generated outputs
@@ -10,3 +12,8 @@
 review_report.md
 test_results.md
 project_tasks.md
+# copilot extension build artifacts
+copilot-extension/node_modules/
+copilot-extension/dist/
+copilot-extension/*.vsix
+

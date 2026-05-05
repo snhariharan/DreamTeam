@@ -78,6 +78,9 @@ from skills.packs import (          # noqa: E402
     API, GRAPHQL,
     # ── Quality packs
     SECURITY, TESTING,
+    # ── CI/CD pipeline packs
+    CICD_GITHUB, CICD_AZURE, CICD_AWS,
+    CICD_JENKINS, CICD_GITLAB, CICD_CIRCLE,
     # ── Container / platform packs
     DOCKER, KUBERNETES, TERRAFORM, OBSERVABILITY,
 )
@@ -89,11 +92,12 @@ _FULL_STACK    = [*_FULL_BACKEND, *_FULL_FRONTEND]
 _FULL_CLOUD    = [CLOUD_AWS, CLOUD_GCP, CLOUD_AZURE]
 _FULL_DATA     = [DATABASE, NOSQL]
 _FULL_API      = [API, GRAPHQL]
+_FULL_CICD     = [CICD_GITHUB, CICD_AZURE, CICD_AWS, CICD_JENKINS, CICD_GITLAB, CICD_CIRCLE]
 _FULL_IaC      = [KUBERNETES, TERRAFORM]           # Infrastructure-as-code
 
 SKILL_ASSIGNMENTS: dict[str, list] = {
     # Solution Architect — understands any codebase (to plan), all clouds
-    # (to choose the right service), IaC and observability (to design the stack).
+    # (to choose the right service), IaC, CI/CD and observability.
     "architect": [
         *_FULL_BACKEND,     # read and plan around any backend language
         *_FULL_FRONTEND,    # understand existing React / Angular code
@@ -118,7 +122,7 @@ SKILL_ASSIGNMENTS: dict[str, list] = {
     ],
 
     # Principal Reviewer — widest view to catch cross-cutting issues.
-    # Keeps full stack + cloud + security — this is the quality gate.
+    # Full stack + cloud + security + CI/CD pipeline review — this is the quality gate.
     "reviewer": [
         *_FULL_BACKEND,     # review any backend language
         *_FULL_FRONTEND,    # review React / Angular code
@@ -129,6 +133,7 @@ SKILL_ASSIGNMENTS: dict[str, list] = {
         DOCKER,             # review Dockerfile security and layer efficiency
         SECURITY,           # OWASP / CVE / SANS secure-code review
         OBSERVABILITY,      # verify instrumentation quality
+        CICD_GITHUB,        # catch insecure workflow patterns (e.g. script injection)
     ],
 
     # QA Automation Engineer — writes tests, not infrastructure.
@@ -140,15 +145,16 @@ SKILL_ASSIGNMENTS: dict[str, list] = {
         TESTING,            # TDD/BDD patterns, Hypothesis, mutation testing
     ],
 
-    # Cloud DevOps Specialist — packages and deploys.
-    # No frontend packs (developer compiles JS), no API design.
+    # Cloud DevOps Specialist — packages and deploys across all platforms.
+    # Full CI/CD + IaC + container coverage for any pipeline platform.
     "devops": [
         *_FULL_BACKEND,     # package any backend runtime in Docker correctly
-        *_FULL_CLOUD,       # deploy to AWS, GCP, or Azure pipelines
+        *_FULL_CLOUD,       # deploy to AWS, GCP, or Azure
         *_FULL_DATA,        # configure managed DB instances and backups
         *_FULL_IaC,         # write Terraform modules + Helm charts
+        *_FULL_CICD,        # GitHub Actions, Azure DevOps, AWS CodePipeline, Jenkins, GitLab CI, CircleCI
         DOCKER,             # multi-stage Dockerfiles, registries (ECR/GAR/ACR)
-        SECURITY,           # least-privilege IAM, secrets management
+        SECURITY,           # least-privilege IAM, OIDC, secrets management
         OBSERVABILITY,      # deploy OTel Collector, Prometheus, Grafana stack
     ],
 }

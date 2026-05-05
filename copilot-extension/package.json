@@ -1,0 +1,61 @@
+{
+  "name": "dreamteam-copilot",
+  "displayName": "DreamTeam",
+  "description": "Run your DreamTeam multi-agent AI crew from GitHub Copilot Chat",
+  "version": "0.1.0",
+  "publisher": "dreamteam",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "AI",
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "agents",
+    "copilot",
+    "crewai",
+    "dreamteam"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "chatParticipants": [
+      {
+        "id": "dreamteam.agent",
+        "fullName": "DreamTeam Agent",
+        "name": "dreamteam",
+        "description": "Run your DreamTeam multi-agent AI crew from Copilot Chat",
+        "isSticky": true,
+        "commands": [
+          {
+            "name": "run",
+            "description": "Run the crew with a task description"
+          },
+          {
+            "name": "profile",
+            "description": "Show or switch the active model profile (e.g. /profile COPILOT_PRO)"
+          },
+          {
+            "name": "status",
+            "description": "Show recent output files (review_report.md, test_results.md)"
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "package": "npm run build && vsce package --no-dependencies",
+    "compile-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^2.24.0",
+    "esbuild": "^0.21.0",
+    "typescript": "^5.4.0"
+  }
+}
